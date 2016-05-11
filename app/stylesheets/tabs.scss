@@ -1,0 +1,26 @@
+@import '~foundation/scss/util/util';
+@import '~foundation/scss/global';
+@import '~foundation/scss/components/tabs';
+
+.Tabs {
+  &__headers {
+    @include tabs-container;
+  }
+
+  &__content {
+    @include tabs-content;
+  }
+}
+
+.TabHeader {
+  @include tabs-title;
+}
+
+.TabPanel {
+  display: none;
+  padding: $tab-content-padding;
+
+  &--is-active {
+    display: block;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "rules": {
+    "no-console": 0
+  },
+  "plugins": [
+    "import",
+  ],
+  "settings": {
+    "import/resolver": "webpack"
+  }
+}

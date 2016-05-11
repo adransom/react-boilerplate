@@ -1,0 +1,16 @@
+// Sass utilities
+@import '~foundation/scss/util/util';
+
+// Global variables and styles
+@import '~foundation/scss/global';
+
+// Components
+@import '~foundation/scss/grid/grid';
+@import '~foundation/scss/typography/typography';
+@import '~foundation/scss/components/button';
+@import '~foundation/scss/forms/forms';
+
+@include foundation-global-styles;
+@include foundation-typography;
+@include foundation-grid;
+@include foundation-forms;

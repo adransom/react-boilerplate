@@ -1,0 +1,11 @@
+@import '~foundation/scss/util/util';
+@import '~foundation/scss/global';
+@import '~foundation/scss/components/top-bar';
+
+.NavBar {
+  @include top-bar-container;
+
+  &__left {
+    float: left;
+  }
+}

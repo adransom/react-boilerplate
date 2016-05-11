@@ -1,0 +1,10 @@
+@import '~foundation/scss/util/util';
+@import '~foundation/scss/global';
+
+$button-margin: 0;
+@import '~foundation/scss/components/button';
+
+.Button {
+  @include button-base;
+  @include button-style;
+}
