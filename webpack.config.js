@@ -7,6 +7,7 @@ const SCRIPTS_DIR = path.join(__dirname, 'app/scripts');
 const STYLES_DIR = path.join(__dirname, 'app/stylesheets');
 const BUILD_DIR = path.join(__dirname, 'build');
 const PUBLIC_DIR = path.join(__dirname, 'public');
+const TESTS_DIR = path.join(__dirname, 'tests');
 const ASSET_PATH = '/assets/';
 
 /**
@@ -44,7 +45,7 @@ var config = {
       {
         test: /.jsx?$/,
         loaders: ['babel'],
-        include: SCRIPTS_DIR,
+        include: [SCRIPTS_DIR, TESTS_DIR],
       },
     ],
   },
@@ -196,6 +197,72 @@ if (TARGET === 'start' || !TARGET) {
       return [Csso];
     },
   });
+} else if (TARGET === 'test' || TARGET === 'test:watch') {
+  config = merge(config, {
+    // Overwrite the default entry and specify our test entry
+    entry: `${TESTS_DIR}/entry.js`,
+    // Output the test files in a tmp directory (that can be ignored in git)
+    output: {
+      path: 'tmp',
+      filename: 'tests.js',
+    },
+    module: {
+      loaders: [
+        {
+          // Still need to process these files, but don't need to use the style-loader
+          test: /.s?css$/,
+          loaders: ['css?sourceMap', 'sass?sourceMap'],
+          include: STYLES_DIR,
+        },
+      ],
+    },
+    // This is required for Enzyme (http://airbnb.io/enzyme/docs/guides/webpack.html)
+    externals: {
+      cheerio: 'null', // This slight change is needed when running mocha from node
+      'react/addons': true,
+      'react/lib/ExecutionEnvironment': true,
+      'react/lib/ReactContext': true,
+    },
+    target: 'node',
+  });
+} else if (TARGET === 'test:serve') {
+  config = merge(config, {
+    // Add test entry file and inline reloading code
+    entry: [
+      `mocha!${TESTS_DIR}/entry.js`,
+      'webpack-dev-server/client?http://localhost:8000',
+    ],
+    devServer: {
+      // Use a different port than the main dev server so we can
+      // run both at the same time
+      port: 8000,
+    },
+    output: {
+      filename: 'browser_tests.js',
+    },
+    module: {
+      loaders: [
+        {
+          // Still need to process these files, but don't need to use the style-loader
+          test: /.s?css$/,
+          loaders: ['css?sourceMap', 'sass?sourceMap'],
+          include: STYLES_DIR,
+        },
+      ],
+    },
+    // This is required for Enzyme (http://airbnb.io/enzyme/docs/guides/webpack.html)
+    externals: {
+      cheerio: 'window',
+      'react/addons': true,
+      'react/lib/ExecutionEnvironment': true,
+      'react/lib/ReactContext': true,
+    },
+  });
+
+  // Since webpack-merge will merge the config.entry if they are both arrays (the common
+  // and this test config both use arrays for the entry option), we need to remove the original
+  // 'app' entry
+  config.entry.splice(0, 1);
 }
 
 module.exports = config;

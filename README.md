@@ -12,6 +12,7 @@
     - [Common](#common)
     - [Development](#development)
     - [Production](#production)
+    - [Test](#test)
   - [Development Server](#development-server)
     - [Hot Reloading (or Hot Module Replacement)](#hot-reloading-or-hot-module-replacement)
 - [Javascript](#javascript)
@@ -21,8 +22,9 @@
   - [Linting](#linting-react)
 - SASS
   - BEM
-- Testing
-  - React
+- [Testing](#testing)
+  - [Writing Tests](#writing-tests)
+  - [Running Tests](#running-tests)
 
 ## Introduction
 
@@ -58,6 +60,7 @@ See below for more about [hot module replacement](#hot-reloading-or-hot-module-r
 - [React](https://facebook.github.io/react/) ([15.0.1](https://facebook.github.io/react/downloads.html))
 - [Webpack](https://webpack.github.io/) (1.13.0)
 - [Babel](https://babeljs.io/) (6.7.7)
+- [Mocha](https://mochajs.org) (with [Chai](http://chaijs.com/) and [Enzyme](http://airbnb.io/enzyme/index.html)) for testing
 - Mostly [ES6-flavoured](https://github.com/lukehoban/es6features) Javascript
 
 _Note: Node 6 isn't supported by many of the above modules yet, so we are sticking to 5.11 for now._
@@ -97,7 +100,7 @@ After running `npm start` the regular site will be available at [http://localhos
 
 ### `npm test`
 
-Coming soon...
+This compiles the bundle and runs all the tests with [Mocha](https://mochajs.org/) and [Enzyme](http://airbnb.io/enzyme/). Since it recompiles the whole bundle every time, this can be quite slow for incremental building and testing. In the [testing section](#testing) we will introduce a few other commands which can speed this process up.
 
 ### `npm run build`
 
@@ -203,11 +206,11 @@ Loaders are the meat of Webpack. They take files, do stuff to them and output th
 {
   test: /.jsx?$/,
   loaders: ['babel'],
-  include: SCRIPTS_DIR,
+  include: [SCRIPTS_DIR, TESTS_DIR],
 }
 ```
 
-This loader runs [Babel](https://babeljs.io/) (via [babel-loader](https://github.com/babel/babel-loader)) across all the scripts. [Babel](https://babeljs.io/) handles converting our ES6 JS and JSX files into Javascript files that most browsers can understand. The settings for [Babel](https://babeljs.io/) are in `.babelrc` in the project root.
+This loader runs [Babel](https://babeljs.io/) (via [babel-loader](https://github.com/babel/babel-loader)) across all the scripts (both app and test scripts). [Babel](https://babeljs.io/) handles converting our ES6 JS and JSX files into Javascript files that most browsers can understand. The settings for [Babel](https://babeljs.io/) are in `.babelrc` in the project root.
 
 ```JavaScript
 resolve: {
@@ -423,6 +426,102 @@ postcss: function () {
 ```
 
 Here we can setup the [PostCSS](http://postcss.org/) plugins. Currently we only use [csso](https://github.com/css/csso) but you could also add [AutoPrefixer](https://github.com/postcss/autoprefixer) here.
+
+#### Test
+
+There are two test configs in this boilerplate which cover various ways of running tests. The first config is for running tests in the console.
+
+```JavaScript
+entry: `${TESTS_DIR}/entry.js`
+```
+
+Here, we overwrite the default app entry for the bundle and use the test entry instead. This just requires all the test files.
+
+```JavaScript
+output: {
+  path: 'tmp',
+  filename: 'tests.js',
+}
+```
+
+Again, overwriting the default output, we put the output at `tmp/tests.js` so it can be run by Mocha from there. This folder is ignored in `.gitignore`.
+
+##### Loaders
+
+```JavaScript
+{
+  test: /.s?css$/,
+  loaders: ['css?sourceMap', 'sass?sourceMap'],
+  include: STYLES_DIR,
+}
+```
+
+We still need to tell Webpack how to load these files, but this time we do nothing with them by not including the `style-loader`.
+
+```JavaScript
+externals: {
+  cheerio: 'null',
+  'react/addons': true,
+  'react/lib/ExecutionEnvironment': true,
+  'react/lib/ReactContext': true,
+}
+```
+
+This section is [required for Enzyme](http://airbnb.io/enzyme/docs/guides/webpack.html). However, as we are running this in Node, we need to change `cheerio: 'window'` to `cheerio: null`, as there is no `window` in Node.
+
+```JavaScript
+target: 'node'
+```
+
+Finally, we set the bundle to target Node, making sure any browser-specific features are removed.
+
+The second config for tests is when displaying the results of the test in the browser, through the [webpack-dev-server](https://webpack.github.io/docs/testing.html#webpack-dev-server).
+
+```JavaScript
+entry: [
+  `mocha!${TESTS_DIR}/entry.js`,
+  'webpack-dev-server/client?http://localhost:8000',
+]
+```
+
+Here, we overwrite the default app entry for the bundle and use the test entry instead. This just requires all the test files. We also add the other file which [enables inline reloading](https://webpack.github.io/docs/webpack-dev-server.html#inline-mode-with-node-js-api) for webpack-dev-server.
+
+```JavaScript
+devServer: {
+  port: 8000,
+}
+```
+
+Here, we just set the server to use a different port than our development server, so we can run the dev server and see the test results at the same time.
+
+```JavaScript
+{
+  test: /.s?css$/,
+  loaders: ['css?sourceMap', 'sass?sourceMap'],
+  include: STYLES_DIR,
+}
+```
+
+We still need to tell Webpack how to load these files, but this time we do nothing with them by not including the `style-loader`.
+
+```JavaScript
+externals: {
+  cheerio: 'window',
+  'react/addons': true,
+  'react/lib/ExecutionEnvironment': true,
+  'react/lib/ReactContext': true,
+}
+```
+
+This section is [required for Enzyme](http://airbnb.io/enzyme/docs/guides/webpack.html).
+
+Finally, we need to do
+
+```JavaScript
+config.entry.splice(0, 1);
+```
+
+to remove the first entry in `config.entry`. Since `webpack-merge` will merge `config.entry` if both are arrays (the common config and this test config both use arrays for the `entry` option), we need to remove the original app entry point.
 
 ### Development Server
 
@@ -744,13 +843,43 @@ import Footer from './Footer/index';
 import Footer from './Footer';
 ```
 
-### React Linting
+### Linting React
 
 The reason we picked [ESLint](http://eslint.org/) is that it has great support for linting React and JSX files, through plugins (the Airbnb preset [already includes everything for us](https://github.com/airbnb/javascript/tree/master/packages/eslint-config-airbnb)). Similarly with JS, we use [Airbnb's React style guide](https://github.com/airbnb/javascript/blob/master/react/README.md). The linting takes place at the same time as the JS, so running `npm lint` or during development with Webpack will lint the React code.
 
 ## Testing
 
-_TODO Add more stuff here_
+The two main tools we use for testing are:
 
-  - [Mocha](https://mochajs.org/)
+  - [Mocha](https://mochajs.org/) with [Chai](http://chaijs.com/)
   - [Enzyme](http://airbnb.io/enzyme/)
+
+Just to be clear, we are talking __unit tests__ and __integration tests__ (the kind where you test interaction between two units). End-to-end tests (or anything which runs in a browser) are not included in this testing setup.
+
+### Writing Tests
+
+Writing the tests is fairly simple. Add a file in the `tests/` directory, include the module you want to test and write assertions using Chai. For more detailed information just check out the docs for [Mocha](https://mochajs.org/#getting-started) and [Chai](http://chaijs.com/guide/styles/#expect).
+
+In this project, there is an example test for a regular Javascript function (`app/scripts/lib/increment.js` and `tests/increment.ts`) and also a test for React components using [shallow rendering](http://airbnb.io/enzyme/docs/api/shallow.html) (`app/scripts/components/counter.jsx` and `tests/counter.jsx`).
+
+### Running Tests
+
+To accomodate different styles, we have included a few different ways to run tests.
+
+#### `npm test`
+
+This is the main way that tests are run, and will be used by build tools and CI servers. This compiles the tests (and corresponding library code) into a bundle that is then run with Mocha. It produces the test output in the console.
+
+_Note: This method is slightly slow, as it compiles the whole bundle every time._
+
+#### `npm run test:watch` and `npm run test:mocha`
+
+This is a much better way of running tests during development. `npm run test:watch` causes Webpack to build once at the start and then do incremental builds as you are developing. Leave this running whilst you are developing and tests will be extremely quick. When you want to run a test, use `npm run test:mocha` and it will act on the incrementally-built bundle. You could also run Mocha with `--watch` if you wanted your tests to be run each time you save, but this is often a personal preference.
+
+#### `npm run test:server`
+
+The final way to run tests will use webpack-dev-server to bundle, serve and run the tests as you develop. Using inline reloading, it will compile and run the tests whenever you change a file and the results will be displayed in the browser at [http://localhost:8000/test.html](http://localhost:8000/test.html).
+
+A simple `test.html` page is in the root of the project and simply loads the generated `browser_tests.js` and Mocha CSS styles.
+
+There is one slight issue with the HTML renderer in that [failures get rendered twice](https://github.com/mochajs/mocha/issues/2083). Hopefully this will be fixed soon.

@@ -10,7 +10,7 @@ export default class Counter extends React.Component {
   }
 
   incrementCounter = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     let emotion = ':(';
 
