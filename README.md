@@ -18,7 +18,7 @@
   - [Babel](#babel)
   - [Linting](#linting)
 - [React](#react)
-  - [React Linting](#react-linting)
+  - [Linting](#linting-react)
 - SASS
   - BEM
 - Testing
@@ -719,10 +719,10 @@ We mostly follow the [Airbnb naming style](https://github.com/airbnb/javascript/
 
 ```JSX
 // bad
-import reservationCard from './ReservationCard';
+import reservationCard from './reservation_card';
 
 // good
-import ReservationCard from './ReservationCard';
+import ReservationCard from './reservation_card';
 
 // bad
 const ReservationItem = <ReservationCard />;
