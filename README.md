@@ -114,9 +114,9 @@ This uses [superstatic](https://www.npmjs.com/package/superstatic) to serve the 
 
 ### `npm run lint`
 
-This actually runs two other npm scripts: `npm run lint-app` and `npm run lint-config`. This uses [ESLint](http://eslint.org/) (with [Airbnb's rules](https://github.com/airbnb/javascript)) to lint the app and the [Webpack](https://webpack.github.io/) config, respectively. The reason they are two seperate steps is that we want to use slightly different rules for the config, as the node version we use doesn't have great ES6 support, so we need to be a little looser with Airbnb's rules for that file.
+This runs [ESLint](http://eslint.org/) (with [Airbnb's rules](https://github.com/airbnb/javascript)) to lint the app, the tests and the [Webpack](https://webpack.github.io/) config. We need to lint each area slightly differently, so there are 3 separate `.eslintrc` files. When ESLint runs on a particular file, [it searches from the current directory up](http://eslint.org/docs/user-guide/configuring#configuration-cascading-and-hierarchy) and combines all the `.eslintrc` files it finds. If `root: true` is a particular `.eslintrc` file, it will stop there and won't look up. We use this feature to lint the app files separately from the Webpack config.
 
-The settings for the app linting are in `.eslintrc` and the settings for the config linting are in `.eslintrc.config`.
+The settings for the app linting are in `app/.eslintrc` (contains `root: true`), the settings for tests are in `tests/.eslintrc` (contains `root: true`) and the settings for Webpack are in the root `.eslintrc`. __The root `.eslintrc` is not used by the other areas due to the presence of `root: true`.__
 
 We may add git hooks, so that the linter is run (and has to pass) before committing.
 
@@ -654,6 +654,12 @@ The ruleset we use is based on [Airbnb's style guide](https://github.com/airbnb/
 The configuration for ESLint is defined in the `.eslintrc` in the root of the project. A quick description follows.
 
 ```JSON
+"root": true
+```
+
+This [stops ESLint from continuing to search upwards](http://eslint.org/docs/user-guide/configuring#configuration-cascading-and-hierarchy) for a parent `.eslintrc` file. This is because the root `.eslintrc` file is to be used by Webpack only.
+
+```JSON
 "extends": "airbnb"
 ```
 
@@ -861,6 +867,18 @@ Just to be clear, we are talking __unit tests__ and __integration tests__ (the k
 Writing the tests is fairly simple. Add a file in the `tests/` directory, include the module you want to test and write assertions using Chai. For more detailed information just check out the docs for [Mocha](https://mochajs.org/#getting-started) and [Chai](http://chaijs.com/guide/styles/#expect).
 
 In this project, there is an example test for a regular Javascript function (`app/scripts/lib/increment.js` and `tests/increment.ts`) and also a test for React components using [shallow rendering](http://airbnb.io/enzyme/docs/api/shallow.html) (`app/scripts/components/counter.jsx` and `tests/counter.jsx`).
+
+#### Linting Tests
+
+We also lint our tests and use basically the same configuration as the [Javascript linting](#linting), except for one change:
+
+```JSON
+"env": {
+  "mocha": true
+}
+```
+
+This lets ESLint know that this code is meant to be run in a Mocha environment and therefore set ups rules to include all of Mocha's global functions/variables like `describe()`.
 
 ### Running Tests
 
