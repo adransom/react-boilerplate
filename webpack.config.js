@@ -37,7 +37,7 @@ var config = {
       {
         test: /.jsx?$/,
         loaders: ['eslint'],
-        include: SCRIPTS_DIR,
+        include: [SCRIPTS_DIR, TESTS_DIR],
       },
     ],
     loaders: [
