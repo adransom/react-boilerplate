@@ -894,6 +894,8 @@ _Note: This method is slightly slow, as it compiles the whole bundle every time.
 
 This is a much better way of running tests during development. `npm run test:watch` causes Webpack to build once at the start and then do incremental builds as you are developing. Leave this running whilst you are developing and tests will be extremely quick. When you want to run a test, use `npm run test:mocha` and it will act on the incrementally-built bundle. You could also run Mocha with `--watch` if you wanted your tests to be run each time you save, but this is often a personal preference.
 
+_Note: There is a bug with `webpack --watch` which means it [doesn't detect small changes like whitespace or adding a semi-colon](https://github.com/webpack/watchpack/issues/16). This can be remedied by using the 'OldWatcherPlugin', but I haven't investigated the drawbacks of using that yet. For now, it is generally OK as Webpack will still notice most changes (adding a line, changing a variable name etc)._
+
 #### `npm run test:server`
 
 The final way to run tests will use webpack-dev-server to bundle, serve and run the tests as you develop. Using inline reloading, it will compile and run the tests whenever you change a file and the results will be displayed in the browser at [http://localhost:8000/test.html](http://localhost:8000/test.html).
