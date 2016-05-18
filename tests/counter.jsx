@@ -7,7 +7,7 @@ import Counter from 'scripts/components/counter';
 describe('<Counter />', () => {
   let wrapper;
 
-  beforeEach(() =>  {
+  beforeEach(() => {
     wrapper = shallow(<Counter />);
   });
 
@@ -41,5 +41,4 @@ describe('<Counter />', () => {
       expect(wrapper.state('emotion')).to.equal(':D');
     });
   });
-
 });

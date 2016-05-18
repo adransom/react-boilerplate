@@ -224,6 +224,12 @@ if (TARGET === 'start' || !TARGET) {
       'react/lib/ReactContext': true,
     },
     target: 'node',
+    eslint: {
+      // Force ESLint to always emit a warning (in Webpack's eyes) so we'll
+      // get a notification that the linting failed, but it won't stop the bundle
+      // from being built.
+      emitWarning: true,
+    },
   });
 } else if (TARGET === 'test:serve') {
   config = merge(config, {
@@ -256,6 +262,12 @@ if (TARGET === 'start' || !TARGET) {
       'react/addons': true,
       'react/lib/ExecutionEnvironment': true,
       'react/lib/ReactContext': true,
+    },
+    eslint: {
+      // Force ESLint to always emit a warning (in Webpack's eyes) so we'll
+      // get a notification that the linting failed, but it won't stop the bundle
+      // from being built.
+      emitWarning: true,
     },
   });
 

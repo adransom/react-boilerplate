@@ -11,9 +11,7 @@
     "test:mocha": "mocha tmp/tests.js",
     "test:serve": "webpack-dev-server",
     "prod": "superstatic build",
-    "lint": "npm run lint:config -s && npm run lint:app -s",
-    "lint:app": "eslint app --ext .js --ext .jsx --cache",
-    "lint:config": "eslint webpack.config.js -c .eslintrc.config --cache"
+    "lint": "eslint app tests webpack.config.js --ext .js --ext .jsx --cache"
   },
   "author": "Adam Ransom",
   "license": "ISC",
